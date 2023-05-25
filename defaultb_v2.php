@@ -1,5 +1,6 @@
 <?php session_start();
 
+use Illuminate\Support\Facades\DB;
 
 //inicializo saldos
 
@@ -38,30 +39,32 @@ $wdescpp 	 	 = 0;
 //	require('conecta.php');
 require('validapost.php'); //garm20220827
 
-	$sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[fecha],[val_13_Sha1]) ";
-	$sqlIns .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate(), ?)";
 
-	DB::statement($sqlIns, [
-		$Expe ,
-		$wsecuencia ,
-		$wreferencua ,
-		$wval_1 ,
-		$wservicio ,
-		$wimporte ,
-		$val_3 ,
-		$t_pago ,
-		$noperacion ,
-		$val_9 ,
-		$val_10 ,
-		$val_5 ,
-		$val_6 ,
-		$val_11 ,
-		$val_12 ,
-		$val_13 
+//es valido  este codigo a laravel 5.4 y php 5.6
+$sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[fecha],[val_13_Sha1]) ";
+$sqlIns .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate(), ?)";
 
-	]);
+DB::statement($sqlIns, [
+	$Expe,
+	$wsecuencia,
+	$wreferencua,
+	$wval_1,
+	$wservicio,
+	$wimporte,
+	$val_3,
+	$t_pago,
+	$noperacion,
+	$val_9,
+	$val_10,
+	$val_5,
+	$val_6,
+	$val_11,
+	$val_12,
+	$val_13
 
-	//garm20220726 
+]);
+
+//garm20220726 
 
 
 
@@ -110,13 +113,18 @@ switch ($wvarpaso) {
 		/////////////////////////////////////////////////// GARM 20220322 080500076147
 
 		//$sqlpru = "EXEC SP_NewRecOf ?" . $Exp; ejemplo con parametro GARM 20220407
-		$sqlpru = "EXEC SP_NewRecOf ";
-		$spresource = mssql_query($sqlpru, $con);
+		//es valido  este codigo a laravel 5.4 y php 5.6
+		// $sqlpru = "EXEC SP_NewRecOf ";
+		// $spresource = mssql_query($sqlpru, $con);
+
+		$spName = "SP_NewRecOf";
+		$result = DB::select("CALL " . $spName);
 
 		$spfoliorec = "0";
 
-		while ($rowf =  mssql_fetch_array($spresource)) {
-			$spfoliorec = $rowf['sfoliorec'];
+		if (!empty($result)) {
+			$rowf = $result[0];
+			$spfoliorec = $rowf->sfoliorec;
 		}
 
 		/////////////////////////////////////////////////
@@ -141,30 +149,38 @@ switch ($wvarpaso) {
 
 		//CUENTAS CONT DEL CONCEPTO DE PAGO
 		//$sql= mssql_query("SELECT * FROM ingresmconceptos where con=\"$wconcepto\" ",$con);
-		$sql = mssql_query("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro  FROM ingresmconceptos where con=\"$wconcepto\" ", $con); // GARM 20220215 080500075345
-		while ($rowf =  mssql_fetch_array($sql)) {
-			$wctaimporte	= trim($rowf['ctaimporte']);
-			$wctarecargo	= trim($rowf['ctarecargo']);
-			$wctasancion	= trim($rowf['ctasancion']);
-			$wctagastos	= trim($rowf['ctagastos']);
-			$wctaotros		= trim($rowf['ctaotros']);
-			$wcentro		= trim($rowf['centro']);
+		//es valido  este codigo a laravel 5.4 y php 5.6
+
+		$sql = DB::select("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro FROM ingresmconceptos where con = ?", [$wconcepto]);
+
+		if (!empty($sql)) {
+			$rowf = $sql[0];
+			$wctaimporte = trim($rowf->ctaimporte);
+			$wctarecargo = trim($rowf->ctarecargo);
+			$wctasancion = trim($rowf->ctasancion);
+			$wctagastos = trim($rowf->ctagastos);
+			$wctaotros = trim($rowf->ctaotros);
+			$wcentro = trim($rowf->centro);
 		}
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////
 		//INICIO CALCULA ADEUDOS
 		//DATOS GENERALES DEL EXPEDIENTE
 		//$sql= mssql_query("SELECT * FROM preddexped where exp=\"$Expe\" and fbaja < '00000001' order by exp",$con);
-		$sql = mssql_query("SELECT apat, amat, nombre, domubi, colubi FROM preddexped where exp=\"$Expe\" and fbaja < '00000001' order by exp", $con); // GARM 20220218 080500075432
-		$row_cnt =  mssql_num_rows($sql);
+		//es valido  este codigo a laravel 5.4 y php 5.6
+
+		$sql = DB::select("SELECT apat, amat, nombre, domubi, colubi FROM preddexped where exp = ? and fbaja < '00000001' order by exp", [$Expe]);
+		$row_cnt = count($sql);
+
 		if ($row_cnt == 0) {
 			$wheader = "Edopredial.php?msg=SI";
 			$redireccionar = 1;
 		}
-		while ($row =  mssql_fetch_array($sql)) {
-			$wsnombre	 = trim($row['apat']) . ' ' . trim($row['amat']) . ' ' . trim($row['nombre']);
-			$wsdireccion = trim($row['domubi']) . ', COL.' . trim($row['colubi']);
-			$wsciudad	 = 'CD. GUADALUPE, NUEVO LEON';
+
+		foreach ($sql as $row) {
+			$wsnombre = trim($row->apat) . ' ' . trim($row->amat) . ' ' . trim($row->nombre);
+			$wsdireccion = trim($row->domubi) . ', COL.' . trim($row->colubi);
+			$wsciudad = 'CD. GUADALUPE, NUEVO LEON';
 		}
 
 		$WGRANTOTAL = 0;
@@ -172,29 +188,36 @@ switch ($wvarpaso) {
 
 
 		//$query= "SELECT a.*,b.descripcion FROM preddadeudos a, predmtpocar b where a.exp=\"$Expe\" and";
-		$query = "SELECT a.tpocar, a.yearbim, a.montoimp, a.salimp, a.salsub, a.bimsem, a.pctimpbon, a.impbon, a.fechaven, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp=\"$Expe\" and"; //GARM 20220221 080500075501 20220602
+		//es valido  este codigo a laravel 5.4 y php 5.6
+
+		$query = "SELECT a.tpocar, a.yearbim, a.montoimp, a.salimp, a.salsub, a.bimsem, a.pctimpbon, a.impbon, a.fechaven, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp = ? and";
 		$query .= " b.tpocar COLLATE DATABASE_DEFAULT = a.tpocar COLLATE DATABASE_DEFAULT  and a.estatus < '0001' ORDER BY yearbim";
-		$sql = mssql_query($query, $con);
-		$row_cnt =  mssql_num_rows($sql);
+
+		$sql = DB::select($query, [$Expe]);
+		$row_cnt = count($sql);
 
 		$descuentoAdicionalFlag = true;
-		//$query222= "SELECT a.*, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp=\"$Expe\" and"; //GARM 20220221 080500075506
-		$query222 = "SELECT a.exp, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp=\"$Expe\" and"; //GARM 20220221 080500075506
+
+		$query222 = "SELECT a.exp, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp = ? and";
 		$query222 .= " b.tpocar COLLATE DATABASE_DEFAULT = a.tpocar COLLATE DATABASE_DEFAULT  and a.estatus < '0001' AND impbon > 0 ORDER BY yearbim";
-		$sql222 = mssql_query($query222, $con);
-		$row_cnt222 =  mssql_num_rows($sql222);
+
+		$sql222 = DB::select($query222, [$Expe]);
+		$row_cnt222 = count($sql222);
+
 		if ($row_cnt222 > 0) {
 			$descuentoAdicionalFlag = false;
 		}
 
 
+		//es valido  este codigo a laravel 5.4 y php 5.6
 
-		while ($row =  mssql_fetch_array($sql)) {
-			$pbonimp	= 0;
-			$bonrec		= 0;
-			$tpocar		= $row['tpocar'];
-			$bimsem		= $row['bimsem'];
-			$wyearbim	= $row['yearbim'];
+		foreach ($sql as $row) {
+			$pbonimp = 0;
+			$bonrec = 0;
+			$tpocar = $row->tpocar;
+			$bimsem = $row->bimsem;
+			$wyearbim = $row->yearbim;
+
 			$wfun		= '00';
 			$WDIAMES 	= trim(date("j"));
 			$TotalImpuestoPredial = 0;
@@ -228,28 +251,22 @@ switch ($wvarpaso) {
 
 			//calcula las bonificaciones   
 			//$sql2= mssql_query("SELECT * FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ",$con);
-			$sql2 = mssql_query("SELECT pctbonimp, funautbon FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ", $con); //GARM 20220222 080500075538
-			$row_cnt2 =  mssql_num_rows($sql2);
-			while ($row2 =  mssql_fetch_array($sql2)) {
-				/* Se cambia la linea para quitar el 3% adicional de bonificacion */
-				/*$paso1	  = (($row['salimp']-$row['salsub'])*$row2['pctbonimp'])/100;*/
-				/*$paso1	  = (($row['salimp']-$row['salsub']); Error modificada el 20210526*/
-				// $paso1	  = (float)$row['salimp']-(float)$row['salsub']; // 20210531 se cancelo esta
-				// 20210531 se activo esta 
-				$paso1	  = (($row['salimp'] - $row['salsub']) * $row2['pctbonimp']) / 100;
-				// 20211130 garm se incluyo este if 
+			//es valido  este codigo a laravel 5.4 y php 5.6
+			
+			$sql2 = DB::select("SELECT pctbonimp, funautbon FROM bondbonpred where tpocar = ? and fecini <= ? and fecfin >= ? and estatus = '0'", [$tpocar, $hoy, $hoy]);
+			$row_cnt2 = count($sql2);
+
+			foreach ($sql2 as $row2) {
+				$paso1 = (($row['salimp'] - $row['salsub']) * $row2->pctbonimp) / 100;
+
 				if ($tpocar == '0002') {
-
-					// $paso1	  = ($row['salimp']-$row['salsub'])*(($row2['pctbonimp'] + 5)/100); 
-
-					//$paso1	  = (($row['salimp']-$row['salsub']) * ($row2['pctbonimp'] + 5)) / 100 ; // 20211202 garm se activo el formato con corchetes 20211203 tenira row en lugar de row2 20211231 se desactivo
-					$paso1	  = ($row['salimp'] * ($row2['pctbonimp']  + 5)) / 100;  //! GARM 20211226 el subsidio se aplica en la linea 312	
+					$paso1 = ($row['salimp'] * ($row2->pctbonimp + 5)) / 100;
 				}
 
-				$paso2	  = $paso1 * 10;
-				$paso3	  = (int)($paso2);
+				$paso2 = $paso1 * 10;
+				$paso3 = (int) $paso2;
 				$pbonimp = $paso3 / 10;
-				$wfun	  = $row2['funautbon'];
+				$wfun = $row2->funautbon;
 			}
 
 			//if(@$row['impbon'] > 0)  // 20211130 garm if cancelado para prevenir en caso que se habiliten bonificaciones especiales 

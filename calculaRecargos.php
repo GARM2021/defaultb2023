@@ -191,36 +191,13 @@ if ($row_cnt_recargos == 0) {
 
 	//convierte el codigo a laravel 5.4 y php 5.6    
 if ($row_cnt_recargos == 0) {
-	$wpctrec = trim('pctrec_' . trim(date("n")));
-	$wntabla = trim($bimsem);
-	//echo 'NO SE ENCONTRO EL BSYB  '.$wbsyb.$wpctrec.'<br>';
-	//echo "SELECT TOP 1 ".$wpctrec." FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='".$wntabla."') ORDER BY bsyb";                                   
-	$sql_recargos2 = mssql_query("SELECT TOP 1 " . $wpctrec . " FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='" . $wntabla . "') ORDER BY bsyb", $con);
-	$row_cnt_recargos2 =  mssql_num_rows($sql_recargos2);
-	while ($row_recargos2 =  mssql_fetch_array($sql_recargos2)) {
-		$wprecargos = $row_recargos2[$wpctrec];
-		if ($WDIAMES == 1) {
-			$WMESMENOS = trim(date("n")) - 1;
-			$wpctrec = trim('pctrec_' . trim($WMESMENOS));
-			if ($WMESMENOS == 0)
-				$wpctrec = trim('pctrec_' . trim('1'));
-		}
-		$paso1	= ($row['salimp'] * $wprecargos) / 100;
-		$paso2	= $paso1 * 10;
-		$paso3	= (int)($paso2);
-		$wrecargos = $paso3 / 10;
-		////$wrecargos=round((($row['salimp']-$row['salsub'])*$wprecargos)/100,0);
-		//echo '7 <br>';
-	}
-}
-if ($row_cnt_recargos == 0) {
     $wpctrec = trim('pctrec_' . trim(date("n")));
     $wntabla = trim($bimsem);
     //echo 'NO SE ENCONTRO EL BSYB  '.$wbsyb.$wpctrec.'<br>';
     //echo "SELECT TOP 1 ".$wpctrec." FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='".$wntabla."') ORDER BY bsyb";
-    $sql_recargos2 = mssql_query("SELECT TOP 1 " . $wpctrec . " FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='" . $wntabla . "') ORDER BY bsyb", $con);
-    $row_cnt_recargos2 =  mssql_num_rows($sql_recargos2);
-    while ($row_recargos2 =  mssql_fetch_array($sql_recargos2)) {
+    $sql_recargos2 = DB::select("SELECT TOP 1 " . $wpctrec . " FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='" . $wntabla . "') ORDER BY bsyb");
+    $row_cnt_recargos2 = count($sql_recargos2);
+    foreach ($sql_recargos2 as $row_recargos2) {
         $wprecargos = $row_recargos2->$wpctrec;
         if ($WDIAMES == 1) {
             $WMESMENOS = trim(date("n")) - 1;
@@ -230,7 +207,7 @@ if ($row_cnt_recargos == 0) {
         }
         $paso1 = ($row['salimp'] * $wprecargos) / 100;
         $paso2 = $paso1 * 10;
-        $paso3 = (int)($paso2);
+        $paso3 = (int) ($paso2);
         $wrecargos = $paso3 / 10;
         ////$wrecargos=round((($row['salimp']-$row['salsub'])*$wprecargos)/100,0);
         //echo '7 <br>';

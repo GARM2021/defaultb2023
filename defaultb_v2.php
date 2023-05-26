@@ -252,12 +252,12 @@ switch ($wvarpaso) {
 			//calcula las bonificaciones   
 			//$sql2= mssql_query("SELECT * FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ",$con);
 			//es valido  este codigo a laravel 5.4 y php 5.6
-			
+
 			$sql2 = DB::select("SELECT pctbonimp, funautbon FROM bondbonpred where tpocar = ? and fecini <= ? and fecfin >= ? and estatus = '0'", [$tpocar, $hoy, $hoy]);
 			$row_cnt2 = count($sql2);
 
 			foreach ($sql2 as $row2) {
-				$paso1 = (($row['salimp'] - $row['salsub']) * $row2->pctbonimp) / 100;
+				$paso1 = (($row->salimp - $row->salsub) * $row2->pctbonimp) / 100;
 
 				if ($tpocar == '0002') {
 					$paso1 = ($row['salimp'] * ($row2->pctbonimp + 5)) / 100;
@@ -312,38 +312,42 @@ switch ($wvarpaso) {
 			}
 
 			//calcula BONIFICACION DE recargos y % DE BONIFICACION de recargos
-			$sql3 = mssql_query("SELECT pctbonrec FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ", $con);
-			$row_cnt3 =  mssql_num_rows($sql3);
-			while ($row3 =  mssql_fetch_array($sql3)) {
-				$pbonrec = $row3['pctbonrec'];
-				$paso1   = ($wrecargos * $row3['pctbonrec'] / 100);
-				$paso2   = $paso1 * 10;
-				$paso3   = (int)($paso2);
-				$bonrec  = $paso3 / 10;
+			//es valido  este codigo a laravel 5.4 y php 5.6
+			$sql3 = "SELECT pctbonrec FROM bondbonpred where tpocar=? and fecini<=? and fecfin>=? and estatus='0'";
+			$params3 = [$tpocar, $hoy, $hoy];
+			$result3 = DB::select($sql3, $params3);
+			$row_cnt3 = count($result3);
+
+			foreach ($result3 as $row3) {
+				$pbonrec = $row3->pctbonrec;
+				$paso1 = ($wrecargos * $row3->pctbonrec / 100);
+				$paso2 = $paso1 * 10;
+				$paso3 = (int)($paso2);
+				$bonrec = $paso3 / 10;
 			}
 
 
 			//$WNETO			= ($row['salimp']+$wrecargos)-($pbonimp+$bonrec+$row['salsub']);
-			$WNETO			= (round($row['salimp'], 2) + round($wrecargos, 2)) - (round($pbonimp, 2) + round($bonrec, 2) + round($row['salsub'], 2));
-			$WimpNETO		= $row['salimp'];
-			$WTOTALMIMPORTE	= $WTOTALMIMPORTE + $row['salimp'];
-			$WTOTALsalsub	= $WTOTALsalsub + $row['salsub'];
-			$WTOTALsalimp	= $WTOTALsalimp + $row['salimp'];
+			$WNETO			= (round($row->salimp, 2) + round($wrecargos, 2)) - (round($pbonimp, 2) + round($bonrec, 2) + round($row->salsub, 2));
+			$WimpNETO		= $row->salimp;
+			$WTOTALMIMPORTE	= $WTOTALMIMPORTE + $row->salimp;
+			$WTOTALsalsub	= $WTOTALsalsub + $row->salsub;
+			$WTOTALsalimp	= $WTOTALsalimp + $row->salimp;
 			$WTOTALpbonimp	= $WTOTALpbonimp + $pbonimp;
 			$WTOTALwrecargos = $WTOTALwrecargos + $wrecargos;
 			$WTOTALbonrec	= $WTOTALbonrec + $bonrec;
 
 
 			//DESCUENTO POR PRONTO PAGO Ingresdingresos Descpp
-			$wdescpp 	 = $wdescpp + $row['salsub']; //! GARM 20211226  no se movio 
+			$wdescpp 	 = $wdescpp + $row->salsub; //! GARM 20211226  no se movio 
 
-			if (substr($row['yearbim'], 0, 4) == date("Y")) {
+			if (substr($row->yearbim, 0, 4) == date("Y")) {
 				$TotalImpuestoPredial += $WNETO;
 			}
 
 			//REZAGO
 			if ($tpocar == '0001') {
-				$wresago		= $wresago + $row['salimp'];
+				$wresago		= $wresago + $row->salimp;
 				$wresagorec		= $wresagorec + $wrecargos;
 				$wresagobonrec	= $wresagobonrec + $bonrec;
 				//$wresagobonimp	= $wresagobonimp+$pbonimp+$row['salsub'];           	
@@ -352,7 +356,7 @@ switch ($wvarpaso) {
 
 			//PREDIAL
 			if ($tpocar == '0002') {
-				$wpredial		= $wpredial + $row['salimp'];
+				$wpredial		= $wpredial + $row->salimp;
 				$wpredialrec	= $wpredialrec + $wrecargos;
 				$wpredialbonrec	= $wpredialbonrec + $bonrec;
 				//$wpredialbonimp	= $wpredialbonimp+$pbonimp+$row['salsub'];
@@ -361,20 +365,20 @@ switch ($wvarpaso) {
 
 			//GASTOS
 			if ($tpocar == '0003') {
-				$wgasto			= $wgasto + $row['salimp'];
+				$wgasto			= $wgasto + $row->salimp;
 				//$wgastobonimp	= $wgastobonimp+$pbonimp+$row['salsub'];
 				$wgastobonimp	= $wgastobonimp + $pbonimp;
 			}
 
 			//SANCIONES
 			if ($tpocar == '0004') {
-				$wsancion		=	$wsancion + $row['salimp'];
+				$wsancion		=	$wsancion + $row->salimp;
 				//$wsancionbonimp =	$wsancionbonimp+$pbonimp+$row['salsub'];           
 				$wsancionbonimp	=	$wsancionbonimp + $pbonimp;
 			}
 
 			$WGRANTOTAL = $WGRANTOTAL + $WNETO;
-			$salsub = $row['salsub'];
+			$salsub = $row->salsub;
 
 			//Para enero 2020 3% adicional en pago en linea, oxxo y paynet
 
@@ -399,11 +403,11 @@ switch ($wvarpaso) {
 
 
 			//$sqlrevpag= mssql_query("SELECT * FROM preddpagos where exp=\"$Expe\" and yearbim=\"$wyearbim\" and fpago=\"$hoy\" and estatus='0000' and tpocar=\"$tpocar\" ",$con); // garm 20220204 09:43 anterior
-			$sqlrevpag = mssql_query("SELECT exp FROM preddpagos where exp=\"$Expe\" and yearbim=\"$wyearbim\" and fpago > '01' and estatus='0000' and tpocar=\"$tpocar\" ", $con); // garm 20220204 09:43 no se generar con importe = cero
-
-
-
-			$reccount_revpag =  mssql_num_rows($sqlrevpag);
+			//es valido  este codigo a laravel 5.4 y php 5.6
+			$sqlrevpag = "SELECT exp FROM preddpagos where exp=? and yearbim=? and fpago > '01' and estatus='0000' and tpocar=?";
+			$paramsrevpag = [$Expe, $wyearbim, $tpocar];
+			$resultrevpag = DB::select($sqlrevpag, $paramsrevpag);
+			$reccount_revpag = count($resultrevpag);
 			if ($reccount_revpag == 0) {
 				// <!-- INSERT DEL PAGO preddpagos-->   
 
@@ -437,40 +441,40 @@ switch ($wvarpaso) {
 				//  $sqlIns.= "yearindfin)"; 
 
 				// GARM 20220209 080500075244 INSERT COMPACTADO 
+				//es valido  este codigo a laravel 5.4 y php 5.6
+				DB::table('preddpagos')->insert([
+					'exp' => $Expe,
+					'ctafolio' => '00000000000000',
+					'cuenta' => '00000000',
+					'yearbim' => $wyearbim,
+					'montoimp' => $WimpNETO,
+					'bonif' => $pbonimp,
+					'recargos' => $wrecargos,
+					'bonrec' => $bonrec,
+					'tpocar' => $tpocar,
+					'caja' => $wcaja,
+					'recibo' => $wfoliorec,
+					'estatus' => '0000',
+					'fun' => $wfun,
+					'fpago' => $hoy,
+					'ofipago' => $wofipago,
+					'region' => $Region,
+					'regman' => $RegionManz,
+					'subsidio' => $salsub,
+					'fcancont' => '',
+					'numunico' => 0,
+					'indiceini' => 0,
+					'indicefin' => 0,
+					'yearindini' => 0,
+					'refban' => '',
+					'yearindfin' => $noperacion,
+				]);
 
-				$sqlIns = "INSERT INTO preddpagos ( exp,  ctafolio,  cuenta,  yearbim,  montoimp,  bonif,  recargos,  bonrec,  tpocar,  caja, recibo, estatus, fun, fpago, ofipago,  region,  regman,  subsidio,  fcancont,  numunico,  indiceini,  indicefin,  yearindini, refban,  yearindfin) ";
-
-				$sqlIns .= "VALUES (";
-				$sqlIns .= "'" . $Expe . "',";
-				$sqlIns .= "'" . '00000000000000' . "',";
-				$sqlIns .= "'" . '00000000' . "',";
-				$sqlIns .= "'" . $wyearbim . "',";
-				$sqlIns .= "$WimpNETO,";
-				$sqlIns .= "$pbonimp,";
-				$sqlIns .= "$wrecargos,";
-				$sqlIns .= "$bonrec,";
-				$sqlIns .= "'" . $tpocar . "',";
-				$sqlIns .= "'" . $wcaja . "',";
-				$sqlIns .= "'" . $wfoliorec . "',";
-				$sqlIns .= "'" . '0000' . "',";
-				$sqlIns .= "'" . $wfun . "',";
-				$sqlIns .= "'" . $hoy . "',";
-				$sqlIns .= "'" . $wofipago . "',";
-				$sqlIns .= "'" . $Region . "',";
-				$sqlIns .= "'" . $RegionManz . "',";
-				$sqlIns .= "$salsub,";
-				$sqlIns .= "' ',";
-				$sqlIns .= "0,";
-				$sqlIns .= "0,";
-				$sqlIns .= "0,";
-				$sqlIns .= "' ',";
-				$sqlIns .= "'" . $noperacion . "',";
-				$sqlIns .= "' ')";
-
-				mssql_query($sqlIns, $con);
-
-				$sqlupdate = "update preddadeudos set salimp=0, salsub=0 where exp='$Expe' and yearbim='$wyearbim' and estatus='0000'"; // GARM 20220109 se incluyo salsub=0 
-				mssql_query($sqlupdate, $con);
+				DB::table('preddadeudos')
+					->where('exp', $Expe)
+					->where('yearbim', $wyearbim)
+					->where('estatus', '0000')
+					->update(['salimp' => 0, 'salsub' => 0]);
 			}
 			// <!-- FIN INSERT DEL PAGO preddpagos-->                            
 		}      //20211202 garm se perdio este cerrar lo inclui de nuevo ???
@@ -481,109 +485,107 @@ switch ($wvarpaso) {
 		//FIN CALCULA ADEUDOS
 		/////////////////////////////////////////////////////////////////////////////////////////////////
 
-		//$sqlrevpagingres= mssql_query("SELECT * FROM ingresdingresos where referencia=\"$Expe\" and fecha=\"$hoy\" ",$con);	
-		$sqlrevpagingres = mssql_query("SELECT recibo FROM ingresdingresos where referencia=\"$Expe\" and fecha=\"$hoy\" ", $con);	//GARM 2022022022 080500075538		
+		//$sqlrevpagingres= mssql_query("SELECT * FROM ingresdingresos where referencia=\"$Expe\" and fecha=\"$hoy\" ",$con);
+		//es valido  este codigo a laravel 5.4 y php 5.6	
+			$sql = "SELECT recibo FROM ingresdingresos where referencia=? and fecha=?";
+			$params = array($Expe, $hoy);
+			$result = DB::connection('sqlsrv')->select($sql, $params);
+			$reccount_revpagINGRES = count($result);
+			
+			if ($reccount_revpag > 0) {
+				$reccount_revpagINGRES = 1;
+			}
+			
+			if ($reccount_revpagINGRES == 0) {
+				$sqlIns = "INSERT INTO ingresdingresos (
+					fecha,
+					recibo,
+					caja,
+					nombre,
+					direccion,
+					ciudad,
+					concepto_1,
+					concepto_2,
+					concepto_3,
+					concepto_4,
+					ctaimporte,
+					importe,
+					bonimporte,
+					ctarecargo,
+					recargos,
+					bonrecargo,
+					ctasancion,
+					sanciones,
+					bonsancion,
+					ctagastos,
+					gastos,
+					bongastos,
+					ctaotros,
+					otros,
+					bonotros,
+					fun,
+					estatusmov,
+					tipo,
+					centro,
+					referencia,
+					descpp,
+					con,
+					numtc,
+					refban,
+					imptc
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			
+				$paramsIns = [
+					$hoy,
+					$wfoliorec,
+					$wcaja,
+					$wsnombre,
+					$wsdireccion,
+					$wsciudad,
+					$wdescconcepto,
+					'',
+					'',
+					$wctaimporte,
+					$wpredial,
+					$wpredialbonimp,
+					$wctarecargo,
+					$wtotrec,
+					$wtotbonrec,
+					$wctasancion,
+					$wsancion,
+					$wsancionbonimp,
+					$wctagastos,
+					$wgasto,
+					$wgastobonimp,
+					$wctaotros,
+					$wresago,
+					$wresagobonimp,
+					$wfun,
+					'00',
+					'PR',
+					$wcentro,
+					$Expe,
+					$wdescpp,
+					$wconcepto,
+					$numtc,
+					$noperacion,
+					$wimporte
+				];
+			
+				DB::connection('sqlsrv')->insert($sqlIns, $paramsIns);
+			}
 
-		$reccount_revpagINGRES =  mssql_num_rows($sqlrevpagingres);
-
-		// garm 20220204 10:43 anterior 080500074940 evita generar recibos con importe = cero 
-		if ($reccount_revpag > 0) {
-			$reccount_revpagINGRES = 1;
-		}
-
-		if ($reccount_revpagINGRES == 0) {
-			// <!-- INSERT DEL PAGO indreddingresos-->
-			$sql = "INSERT INTO ingresdingresos (";
-			$sql .= "fecha,";
-			$sql .= "recibo,";
-			$sql .= "caja,";
-			$sql .= "nombre,";
-			$sql .= "direccion,";
-			$sql .= "ciudad,";
-			$sql .= "concepto_1,";
-			$sql .= "concepto_2,";
-			$sql .= "concepto_3,";
-			$sql .= "concepto_4,";
-			$sql .= "ctaimporte,";
-			$sql .= "importe,";
-			$sql .= "bonimporte,";
-			$sql .= "ctarecargo,";
-			$sql .= "recargos,";
-			$sql .= "bonrecargo,";
-			$sql .= "ctasancion,";
-			$sql .= "sanciones,";
-			$sql .= "bonsancion,";
-			$sql .= "ctagastos,";
-			$sql .= "gastos,";
-			$sql .= "bongastos,";
-			$sql .= "ctaotros,";
-			$sql .= "otros,";
-			$sql .= "bonotros,";
-			$sql .= "fun,";
-			$sql .= "estatusmov,";
-			$sql .= "tipo,";
-			$sql .= "centro,";
-			$sql .= "referencia,";
-			$sql .= "descpp,";
-			$sql .= "con,";
-			$sql .= "numtc,";
-			$sql .= "refban,";
-			$sql .= "imptc)";
-
-			$sql .= "VALUES (";
-
-			$sql .= "'" . $hoy . "',";
-			$sql .= "'" . $wfoliorec . "',";
-			$sql .= "'" . $wcaja . "',";
-			$sql .= "'" . $wsnombre . "',";
-			$sql .= "'" . $wsdireccion . "',";
-			$sql .= "'" . $wsciudad . "',";
-			$sql .= "'" . $wdescconcepto . "',";
-			$sql .= "'',";
-			//$sql.= "'".$requestDataStringR."',"; //20230312 solo para prueba  $requestDataStringR $hn_autoriz
-			//$sql.= "'".$hn_autoriz."',"; //20230312 solo para prueba  $requestDataStringR
-			//$sql.= "'".$hmac."',"; //20230312 solo para prueba  $requestDataStringR
-			$sql .= "'',";
-			$sql .= "'',";
-			$sql .= "'" . $wctaimporte . "',";
-			$sql .= "$wpredial,";
-			$sql .= "$wpredialbonimp,";
-			$sql .= "'" . $wctarecargo . "',";
-			$sql .= "$wtotrec,";
-			$sql .= "$wtotbonrec,";
-			$sql .= "'" . $wctasancion . "',";
-			$sql .= "$wsancion,";
-			$sql .= "$wsancionbonimp,";
-			$sql .= "'" . $wctagastos . "',";
-			$sql .= "$wgasto,";
-			$sql .= "$wgastobonimp,";
-			$sql .= "'" . $wctaotros . "',";
-			$sql .= "$wresago,";
-			$sql .= "$wresagobonimp,";
-			$sql .= "'" . $wfun . "',";
-			$sql .= "'" . '00' . "',";
-			$sql .= "'" . 'PR' . "',";
-			$sql .= "'" . $wcentro . "',";
-			$sql .= "'" . $Expe . "',";
-			$sql .= "$wdescpp,"; //! GARM 20211226 se queda igual guarda el subsidio 
-			$sql .= "'" . $wconcepto . "',";
-			$sql .= "'" . $numtc . "',";
-			$sql .= "'" . $noperacion . "',";
-			$sql .= "$wimporte)";
-
-			//echo $sql;
-
-			mssql_query($sql, $con) or die(mysql_error());
 
 			//ACTUALIZA INGRESMCENTROS
-			$sqlf = mssql_query("SELECT * FROM ingresmcentros  where centro=\"$wcentro\" ", $con);
-			while ($rowf =  mssql_fetch_array($sqlf)) {
-				$wsumingreso		 = trim('ingreso_' . trim(date("n")));
-				$wprecargos		 = $rowf[$wsumingreso] + $WGRANTOTAL;
-				$wprecargos13		 = $rowf['ingreso_13'] + $WGRANTOTAL;
-				$sqlfupdatemcentros = "update ingresmcentros set $wsumingreso=$wprecargos,ingreso_13=$wprecargos13 where centro='$wcentro'";
+			//es valido  este codigo a laravel 5.4 y php 5.6	
+			$rowf = DB::connection('sqlsrv')->select("SELECT * FROM ingresmcentros WHERE centro=?", [$wcentro]);
+				foreach ($rowf as $row) {
+					$wsumingreso = trim('ingreso_' . trim(date("n")));
+					$wprecargos = $row->{$wsumingreso} + $WGRANTOTAL;
+					$wprecargos13 = $row->ingreso_13 + $WGRANTOTAL;
+					$sqlfupdatemcentros = "UPDATE ingresmcentros SET $wsumingreso=$wprecargos, ingreso_13=$wprecargos13 WHERE centro=?";
 
-				mssql_query($sqlfupdatemcentros, $con);
+					DB::connection('sqlsrv')->update($sqlfupdatemcentros, [$wcentro]);
 			}
 
 
@@ -624,24 +626,25 @@ switch ($wvarpaso) {
 
 
 			//ACTUALIZA PREDMYEAR
+			//es valido  este codigo a laravel 5.4 y php 5.6
 			$byear = trim(date("Y"));
 
-			$sqlf = mssql_query("SELECT * FROM predmyear  where year=\"$byear\" ", $con);
-			while ($rowf =  mssql_fetch_array($sqlf)) {
-				$wsuminporte	 = trim('importe_' . trim(date("n")));
-				$waddimporte	 = $rowf[$wsuminporte] + $WTOTALMIMPORTE;
-				$waddimportefin = $rowf['importe_13'] + $WTOTALMIMPORTE;
+			$rowf = DB::connection('sqlsrv')->select("SELECT * FROM predmyear WHERE year=?", [$byear]);
+			foreach ($rowf as $row) {
+				$wsuminporte = trim('importe_' . trim(date("n")));
+				$waddimporte = $row->{$wsuminporte} + $WTOTALMIMPORTE;
+				$waddimportefin = $row->importe_13 + $WTOTALMIMPORTE;
 
-				$wsumrecgasa	 = trim('recgasa_' . trim(date("n")));
-				$waddrecgasa	 = $rowf[$wsumrecgasa] + $WTOTALwrecargos;
-				$waddrecgasafin = $rowf['recgasa_13'] + $WTOTALwrecargos;
+				$wsumrecgasa = trim('recgasa_' . trim(date("n")));
+				$waddrecgasa = $row->{$wsumrecgasa} + $WTOTALwrecargos;
+				$waddrecgasafin = $row->recgasa_13 + $WTOTALwrecargos;
 
-				$wsumboniacu	 = trim('boniacu_' . trim(date("n")));
-				$waddboniacu	 = $rowf[$wsumboniacu] + $WTOTALwrecargos;
-				$waddboniacufin = $rowf['boniacu_13'] + $WTOTALpbonimp + $WTOTALbonrec;
+				$wsumboniacu = trim('boniacu_' . trim(date("n")));
+				$waddboniacu = $row->{$wsumboniacu} + $WTOTALwrecargos;
+				$waddboniacufin = $row->boniacu_13 + $WTOTALpbonimp + $WTOTALbonrec;
 
-				$sqlfupdatepredmyear = "update predmyear set $wsuminporte=$waddimporte,importe_13=$waddimportefin,$wsumrecgasa=$waddrecgasa,recgasa_13=$waddrecgasafin,$wsumboniacu=$waddboniacu,boniacu_13=$waddboniacufin where year=\"$byear\"";
-				mssql_query($sqlfupdatepredmyear, $con);
+				$sqlfupdatepredmyear = "UPDATE predmyear SET $wsuminporte=$waddimporte, importe_13=$waddimportefin, $wsumrecgasa=$waddrecgasa, recgasa_13=$waddrecgasafin, $wsumboniacu=$waddboniacu, boniacu_13=$waddboniacufin WHERE year=?";
+				DB::connection('sqlsrv')->update($sqlfupdatepredmyear, [$byear]);
 			}
 		}
 
@@ -664,7 +667,7 @@ switch ($wvarpaso) {
 		$wdescconcepto = " ";
 
 		break;
-} //end switch                
+	 } //end switch                
 ?>
 
 <HTML>

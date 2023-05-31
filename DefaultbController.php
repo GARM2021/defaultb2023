@@ -21,9 +21,9 @@ class DefaultbController extends Controller
 
 
 
-	
+
 		//inicializo saldos
-		
+
 		$WGRANTOTAL		= 0;
 		$wresagobonimp	= 0;
 		$wresago		= 0;
@@ -37,7 +37,7 @@ class DefaultbController extends Controller
 		$wpredialbonimp	= 0;
 		$wactualiza		= 0;
 		$hoy			= trim(date("Ymd"));
-		
+
 		$WTOTALMIMPORTE	 = 0;
 		$WTOTALsalsub	 = 0;
 		$WTOTALsalimp	 = 0;
@@ -50,22 +50,29 @@ class DefaultbController extends Controller
 		$wpredialbonrec  = 0;
 		$wpredialrec 	 = 0;
 		$wdescpp 	 	 = 0;
-		
+
 		//Desarrollado por Alejandro Alanis
 		//Puedes hacer lo que quieras con el c�digo
-		
+
 		//Configuracion de la conexion a base de datos
-		
+
 		//	require('conecta.php');
 		require('validapost.php'); //garm20220827
-		
-		
-		//es valido  este codigo a laravel 5.4 y php 5.6
-		$sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[fecha],[val_13_Sha1]) ";
-		$sqlIns .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate(), ?)";
-		
-		DB::statement($sqlIns, [
-			$Expe,
+
+
+		// //es valido  este codigo a laravel 5.4 y php 5.6
+		// $sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[referencia],[val_1_nivelDetalle],[t_servicio],[t_importe]";
+		// $sqlIns.= ",[val_3_moneda],[t_pago],[n_autoriz],[val_9_numtc],[val_10_fpagp],[val_5_financiamiento]";
+		// $sqlIns.= ",[val_6_periodoFinan],[val_11_email],[val_12_Telefono],[val_13_Sha1],[fecha] ) ";
+		// $sqlIns .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate()))";
+
+		// DB::connection('nombre_de_conexion')->statement($sql, $bindings);
+		// DB::connection('sqlsrv')->statement($sql, $bindings);
+
+		$sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[referencia],[val_1_nivelDetalle],[t_servicio],[t_importe],[val_3_moneda],[t_pago],[n_autoriz],[val_9_numtc],[val_10_fpagp],[val_5_financiamiento],[val_6_periodoFinan],[val_11_email],[val_12_Telefono],[val_13_Sha1],[fecha] ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate() )";
+
+		DB::connection('sqlsrv')->statement($sqlIns, [   
+			$Expe,                     
 			$wsecuencia,
 			$wreferencua,
 			$wval_1,
@@ -81,78 +88,78 @@ class DefaultbController extends Controller
 			$val_11,
 			$val_12,
 			$val_13
-		
+
 		]);
-		
+
 		//garm20220726 
-		
-		
-		
+
+
+
 		$numcaracteres = strlen(trim($wreferencua));
 		if ($numcaracteres > 0) {
 			$wvarpaso = 'CONEXP';
 		} else {
 			$wvarpaso = 'SINEXP';
 		}
-		
+
 		switch ($wvarpaso) {
 			case "CONEXP":
 				$Expe = trim($wreferencua);  		// Referencia "Referencia �nica e irrepetible por proceso de pago" 
 				//$Expe       ='34392009';
 				$Region     = trim(substr($Expe, 0, 2));
 				$RegionManz = trim(substr($Expe, 0, 5));
-		
+
 				//DATOS CAJA Y CONCEPTO DE COBRO
 				//BANCOMER PREDIAL  - 0801 CAJA CANCELADA
 				//BANCOMER PREDIAL  - 0805
 				//BANCOMER TRANSITO - 0802
 				//BANAMEX PREDIAL   - 0803
 				//BANAMEX TRANSITO  - 0804
-		
-		
+
+
 				// OFICINAS DE PAGO
 				//BANCOMER PREDIAL  - 0801
 				//BANAMEX PREDIAL   - 0802
-		
+
 				$wcaja		= '0805';
 				$wofipago	= '0801';
-		
+
 				//DATOS CONCEPTO DE PAGO
 				//PREDIAL          - 1104
 				//PREDIAL BANCOS   - 1105
 				//PREDIAL INTERNET - 1106 (AUN SIN REGISTRO EN DB)
-		
+
 				$wconcepto		= '1105';
 				$wdescconcepto	= trim('PAGO IMP. PREDIAL Exp: ' . $Expe . ' ');
 				//$wdescconcepto1	= phpversion();
-		
+
 				//EXTRAE NUMERO CONSECUTIVO DE RECIBO
-		
-		
-		
+
+
+
 				/////////////////////////////////////////////////// GARM 20220322 080500076147
-		
+
 				//$sqlpru = "EXEC SP_NewRecOf ?" . $Exp; ejemplo con parametro GARM 20220407
 				//es valido  este codigo a laravel 5.4 y php 5.6
 				// $sqlpru = "EXEC SP_NewRecOf ";
 				// $spresource = mssql_query($sqlpru, $con);
-		
+
 				$spName = "SP_NewRecOf";
 				$result = DB::select("CALL " . $spName);
-		
+
 				$spfoliorec = "0";
-		
+
 				if (!empty($result)) {
 					$rowf = $result[0];
 					$spfoliorec = $rowf->sfoliorec;
 				}
-		
+
 				/////////////////////////////////////////////////
-		
+
 				//$wdescconcepto2	= $spfoliorec." PRUEBA ";
-		
+
 				$wfoliorec = $spfoliorec;
-		
+
 				/* $sqlf= mssql_query("SELECT foliorec FROM ingresmcajas where caja=\"$wcaja\" ",$con); //GARM 20220322 CANCELADO GARM 20220215 080500075345 GARM CANCELADO 20220317 080500076109
 				while($rowf =  mssql_fetch_array($sqlf))
 				{
@@ -166,13 +173,13 @@ class DefaultbController extends Controller
 					 $wfoliorec="0".$_SESSION["wfoliorecibo"];
 				} */
 				//  echo $_SESSION["wfoliorecibo"]; 
-		
+
 				//CUENTAS CONT DEL CONCEPTO DE PAGO
 				//$sql= mssql_query("SELECT * FROM ingresmconceptos where con=\"$wconcepto\" ",$con);
 				//es valido  este codigo a laravel 5.4 y php 5.6
-		
+
 				$sql = DB::select("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro FROM ingresmconceptos where con = ?", [$wconcepto]);
-		
+
 				if (!empty($sql)) {
 					$rowf = $sql[0];
 					$wctaimporte = trim($rowf->ctaimporte);
@@ -182,67 +189,67 @@ class DefaultbController extends Controller
 					$wctaotros = trim($rowf->ctaotros);
 					$wcentro = trim($rowf->centro);
 				}
-		
+
 				/////////////////////////////////////////////////////////////////////////////////////////////////
 				//INICIO CALCULA ADEUDOS
 				//DATOS GENERALES DEL EXPEDIENTE
 				//$sql= mssql_query("SELECT * FROM preddexped where exp=\"$Expe\" and fbaja < '00000001' order by exp",$con);
 				//es valido  este codigo a laravel 5.4 y php 5.6
-		
+
 				$sql = DB::select("SELECT apat, amat, nombre, domubi, colubi FROM preddexped where exp = ? and fbaja < '00000001' order by exp", [$Expe]);
 				$row_cnt = count($sql);
-		
+
 				if ($row_cnt == 0) {
 					$wheader = "Edopredial.php?msg=SI";
 					$redireccionar = 1;
 				}
-		
+
 				foreach ($sql as $row) {
 					$wsnombre = trim($row->apat) . ' ' . trim($row->amat) . ' ' . trim($row->nombre);
 					$wsdireccion = trim($row->domubi) . ', COL.' . trim($row->colubi);
 					$wsciudad = 'CD. GUADALUPE, NUEVO LEON';
 				}
-		
+
 				$WGRANTOTAL = 0;
-		
-		
-		
+
+
+
 				//$query= "SELECT a.*,b.descripcion FROM preddadeudos a, predmtpocar b where a.exp=\"$Expe\" and";
 				//es valido  este codigo a laravel 5.4 y php 5.6
-		
+
 				$query = "SELECT a.tpocar, a.yearbim, a.montoimp, a.salimp, a.salsub, a.bimsem, a.pctimpbon, a.impbon, a.fechaven, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp = ? and";
 				$query .= " b.tpocar COLLATE DATABASE_DEFAULT = a.tpocar COLLATE DATABASE_DEFAULT  and a.estatus < '0001' ORDER BY yearbim";
-		
+
 				$sql = DB::select($query, [$Expe]);
 				$row_cnt = count($sql);
-		
+
 				$descuentoAdicionalFlag = true;
-		
+
 				$query222 = "SELECT a.exp, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp = ? and";
 				$query222 .= " b.tpocar COLLATE DATABASE_DEFAULT = a.tpocar COLLATE DATABASE_DEFAULT  and a.estatus < '0001' AND impbon > 0 ORDER BY yearbim";
-		
+
 				$sql222 = DB::select($query222, [$Expe]);
 				$row_cnt222 = count($sql222);
-		
+
 				if ($row_cnt222 > 0) {
 					$descuentoAdicionalFlag = false;
 				}
-		
-		
+
+
 				//es valido  este codigo a laravel 5.4 y php 5.6
-		
+
 				foreach ($sql as $row) {
 					$pbonimp = 0;
 					$bonrec = 0;
 					$tpocar = $row->tpocar;
 					$bimsem = $row->bimsem;
 					$wyearbim = $row->yearbim;
-		
+
 					$wfun		= '00';
 					$WDIAMES 	= trim(date("j"));
 					$TotalImpuestoPredial = 0;
-		
-		
+
+
 					/*
 								$sql2= mssql_query("SELECT * FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ",$con);
 								$row_cnt2 =  mssql_num_rows($sql2);
@@ -267,36 +274,36 @@ class DefaultbController extends Controller
 									
 								}					
 							*/
-		
-		
+
+
 					//calcula las bonificaciones   
 					//$sql2= mssql_query("SELECT * FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ",$con);
 					//es valido  este codigo a laravel 5.4 y php 5.6
-		
+
 					$sql2 = DB::select("SELECT pctbonimp, funautbon FROM bondbonpred where tpocar = ? and fecini <= ? and fecfin >= ? and estatus = '0'", [$tpocar, $hoy, $hoy]);
 					$row_cnt2 = count($sql2);
-		
+
 					foreach ($sql2 as $row2) {
 						$paso1 = (($row->salimp - $row->salsub) * $row2->pctbonimp) / 100;
-		
+
 						if ($tpocar == '0002') {
 							$paso1 = ($row['salimp'] * ($row2->pctbonimp + 5)) / 100;
 						}
-		
+
 						$paso2 = $paso1 * 10;
 						$paso3 = (int) $paso2;
 						$pbonimp = $paso3 / 10;
 						$wfun = $row2->funautbon;
 					}
-		
+
 					//if(@$row['impbon'] > 0)  // 20211130 garm if cancelado para prevenir en caso que se habiliten bonificaciones especiales 
 					//{
-		
+
 					//$pbonimp = ( @$row['salimp'] - $row['salsub']) * ((@$row['pctbonimp'] + 0)/100); /* SE HBILITA + 5 BUEN FIN 2021 SOLO HABITACIONALES CALCULADOS EN PREDDADEUDOS GARM 2021/11/09 */
 					//}
-		
+
 					//calcula recargos y % de recargos
-		
+
 					include('calculaRecargos.php');
 					/* $wbsyb=trim($bimsem).trim($row['yearbim']);                         
 							$sql_recargos= mssql_query("SELECT * FROM predmtabrec where bsyb=\"$wbsyb\" ",$con);
@@ -330,14 +337,14 @@ class DefaultbController extends Controller
 						$wprecargos = 0;
 						$wrecargos  = 0;
 					}
-		
+
 					//calcula BONIFICACION DE recargos y % DE BONIFICACION de recargos
 					//es valido  este codigo a laravel 5.4 y php 5.6
 					$sql3 = "SELECT pctbonrec FROM bondbonpred where tpocar=? and fecini<=? and fecfin>=? and estatus='0'";
 					$params3 = [$tpocar, $hoy, $hoy];
 					$result3 = DB::select($sql3, $params3);
 					$row_cnt3 = count($result3);
-		
+
 					foreach ($result3 as $row3) {
 						$pbonrec = $row3->pctbonrec;
 						$paso1 = ($wrecargos * $row3->pctbonrec / 100);
@@ -345,8 +352,8 @@ class DefaultbController extends Controller
 						$paso3 = (int)($paso2);
 						$bonrec = $paso3 / 10;
 					}
-		
-		
+
+
 					//$WNETO			= ($row['salimp']+$wrecargos)-($pbonimp+$bonrec+$row['salsub']);
 					$WNETO			= (round($row->salimp, 2) + round($wrecargos, 2)) - (round($pbonimp, 2) + round($bonrec, 2) + round($row->salsub, 2));
 					$WimpNETO		= $row->salimp;
@@ -356,15 +363,15 @@ class DefaultbController extends Controller
 					$WTOTALpbonimp	= $WTOTALpbonimp + $pbonimp;
 					$WTOTALwrecargos = $WTOTALwrecargos + $wrecargos;
 					$WTOTALbonrec	= $WTOTALbonrec + $bonrec;
-		
-		
+
+
 					//DESCUENTO POR PRONTO PAGO Ingresdingresos Descpp
 					$wdescpp 	 = $wdescpp + $row->salsub; //! GARM 20211226  no se movio 
-		
+
 					if (substr($row->yearbim, 0, 4) == date("Y")) {
 						$TotalImpuestoPredial += $WNETO;
 					}
-		
+
 					//REZAGO
 					if ($tpocar == '0001') {
 						$wresago		= $wresago + $row->salimp;
@@ -373,7 +380,7 @@ class DefaultbController extends Controller
 						//$wresagobonimp	= $wresagobonimp+$pbonimp+$row['salsub'];           	
 						$wresagobonimp	= $wresagobonimp + $pbonimp;
 					}
-		
+
 					//PREDIAL
 					if ($tpocar == '0002') {
 						$wpredial		= $wpredial + $row->salimp;
@@ -382,26 +389,26 @@ class DefaultbController extends Controller
 						//$wpredialbonimp	= $wpredialbonimp+$pbonimp+$row['salsub'];
 						$wpredialbonimp	= $wpredialbonimp + $pbonimp; //! GARM 20211226  no se movio 
 					}
-		
+
 					//GASTOS
 					if ($tpocar == '0003') {
 						$wgasto			= $wgasto + $row->salimp;
 						//$wgastobonimp	= $wgastobonimp+$pbonimp+$row['salsub'];
 						$wgastobonimp	= $wgastobonimp + $pbonimp;
 					}
-		
+
 					//SANCIONES
 					if ($tpocar == '0004') {
 						$wsancion		=	$wsancion + $row->salimp;
 						//$wsancionbonimp =	$wsancionbonimp+$pbonimp+$row['salsub'];           
 						$wsancionbonimp	=	$wsancionbonimp + $pbonimp;
 					}
-		
+
 					$WGRANTOTAL = $WGRANTOTAL + $WNETO;
 					$salsub = $row->salsub;
-		
+
 					//Para enero 2020 3% adicional en pago en linea, oxxo y paynet
-		
+
 					// $sql_descuento = "SELECT * FROM predexpdesc WHERE exp = '$Expe'"; 20211110
 					// $query_descuento = mssql_query($sql_descuento, $con); 20211110
 					// $descuento = 0; 20211110
@@ -418,10 +425,10 @@ class DefaultbController extends Controller
 						$pbonimp += $descuento;
 						$wpredialbonimp += $descuento;
 					}
-		
-		
-		
-		
+
+
+
+
 					//$sqlrevpag= mssql_query("SELECT * FROM preddpagos where exp=\"$Expe\" and yearbim=\"$wyearbim\" and fpago=\"$hoy\" and estatus='0000' and tpocar=\"$tpocar\" ",$con); // garm 20220204 09:43 anterior
 					//es valido  este codigo a laravel 5.4 y php 5.6
 					$sqlrevpag = "SELECT exp FROM preddpagos where exp=? and yearbim=? and fpago > '01' and estatus='0000' and tpocar=?";
@@ -430,9 +437,9 @@ class DefaultbController extends Controller
 					$reccount_revpag = count($resultrevpag);
 					if ($reccount_revpag == 0) {
 						// <!-- INSERT DEL PAGO preddpagos-->   
-		
-		
-		
+
+
+
 						//  $sqlIns = "INSERT INTO preddpagos (";
 						//  $sqlIns.= "exp,"; 
 						//  $sqlIns.= "ctafolio,"; 
@@ -459,7 +466,7 @@ class DefaultbController extends Controller
 						//  $sqlIns.= "yearindini,";
 						//  $sqlIns.= "refban,"; 
 						//  $sqlIns.= "yearindfin)"; 
-		
+
 						// GARM 20220209 080500075244 INSERT COMPACTADO 
 						//es valido  este codigo a laravel 5.4 y php 5.6
 						DB::table('preddpagos')->insert([
@@ -489,7 +496,7 @@ class DefaultbController extends Controller
 							'refban' => '',
 							'yearindfin' => $noperacion,
 						]);
-		
+
 						DB::table('preddadeudos')
 							->where('exp', $Expe)
 							->where('yearbim', $wyearbim)
@@ -498,28 +505,28 @@ class DefaultbController extends Controller
 					}
 					// <!-- FIN INSERT DEL PAGO preddpagos--> 
 					//! aqui va el }   
-				}                        
-			    //20211202 garm se perdio este cerrar lo inclui de nuevo ??? //
-		
+				}
+				//20211202 garm se perdio este cerrar lo inclui de nuevo ??? //
+
 				$wtotrec = $wresagorec + $wpredialrec;
 				$wtotbonrec = $wresagobonrec + $wpredialbonrec;
-		
+
 				//FIN CALCULA ADEUDOS
 				/////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
 				//$sqlrevpagingres= mssql_query("SELECT * FROM ingresdingresos where referencia=\"$Expe\" and fecha=\"$hoy\" ",$con);
 				//es valido  este codigo a laravel 5.4 y php 5.6	
-					$sql = "SELECT recibo FROM ingresdingresos where referencia=? and fecha=?";
-					$params = array($Expe, $hoy);
-					$result = DB::connection('sqlsrv')->select($sql, $params);
-					$reccount_revpagINGRES = count($result);
-					
-					if ($reccount_revpag > 0) {
-						$reccount_revpagINGRES = 1;
-					}
-					
-					if ($reccount_revpagINGRES == 0) {
-						$sqlIns = "INSERT INTO ingresdingresos (
+				$sql = "SELECT recibo FROM ingresdingresos where referencia=? and fecha=?";
+				$params = array($Expe, $hoy);
+				$result = DB::connection('sqlsrv')->select($sql, $params);
+				$reccount_revpagINGRES = count($result);
+
+				if ($reccount_revpag > 0) {
+					$reccount_revpagINGRES = 1;
+				}
+
+				if ($reccount_revpagINGRES == 0) {
+					$sqlIns = "INSERT INTO ingresdingresos (
 							fecha,
 							recibo,
 							caja,
@@ -556,148 +563,142 @@ class DefaultbController extends Controller
 							refban,
 							imptc
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-					
-						$paramsIns = [
-							$hoy,
-							$wfoliorec,
-							$wcaja,
-							$wsnombre,
-							$wsdireccion,
-							$wsciudad,
-							$wdescconcepto,
-							'',
-							'',
-							$wctaimporte,
-							$wpredial,
-							$wpredialbonimp,
-							$wctarecargo,
-							$wtotrec,
-							$wtotbonrec,
-							$wctasancion,
-							$wsancion,
-							$wsancionbonimp,
-							$wctagastos,
-							$wgasto,
-							$wgastobonimp,
-							$wctaotros,
-							$wresago,
-							$wresagobonimp,
-							$wfun,
-							'00',
-							'PR',
-							$wcentro,
-							$Expe,
-							$wdescpp,
-							$wconcepto,
-							$numtc,
-							$noperacion,
-							$wimporte
-						];
-					
-						DB::connection('sqlsrv')->insert($sqlIns, $paramsIns);
-					}
-		
-		
-					//ACTUALIZA INGRESMCENTROS
-					//es valido  este codigo a laravel 5.4 y php 5.6	
-					$rowf = DB::connection('sqlsrv')->select("SELECT * FROM ingresmcentros WHERE centro=?", [$wcentro]);
-						foreach ($rowf as $row) {
-							$wsumingreso = trim('ingreso_' . trim(date("n")));
-							$wprecargos = $row->{$wsumingreso} + $WGRANTOTAL;
-							$wprecargos13 = $row->ingreso_13 + $WGRANTOTAL;
-							$sqlfupdatemcentros = "UPDATE ingresmcentros SET $wsumingreso=$wprecargos, ingreso_13=$wprecargos13 WHERE centro=?";
-		
-							DB::connection('sqlsrv')->update($sqlfupdatemcentros, [$wcentro]);
-					}
-		
-		
-		
-					//INSERTAR EN PREDDEXPCONT LOS EXPEDIENTES CON DERECHO A SEGURO
-		
-					//1-se trae los tipos de construccion marcados como habitacionales campo (HABITA)
-					//$sqlf= mssql_query("select * from predmtpoconst where habita = 1");
-					//while($rowf =  mssql_fetch_array($sqlf))
-		
-					//2-revisa tipos de construccion que tiene el expediente
-					//$sqlf= mssql_query("select * from preddtpoconst where exp=\"$Expe\");
-					//while($rowf =  mssql_fetch_array($sqlf))
-		
-					//3-verifica cuantos exp tiene la tabla preddexpcont para que no pase de 20,000 que sea saldo=0 y que area de construccion sea mayor a 20 mts.
-		
-					//$sqlf= mssql_query("select count(*) as tot from preddexpcont");
-					//while($rowf =  mssql_fetch_array($sqlf))
-		
-					// si el expediente tiene tipo de construccion 
-		
-					//if wsalimp = 0 and sqcuantos.tot < 20000 and sqdexped.areaconst >= 20
-					//select * from dtpoconsexp where tpoconst not in (select tpoconst from mtpoconst) into cursor nohay
-					//si esta dtpoconsexp pero no esta en mtpcost
-					//select nohay
-					//*** si el cursor NOHAY tiene registros es que no se debe otorgar la poliza
-					//if reccount() > 0 
-					//wleyenda =.f.
-					//else
-					//*** si el cursor no tiene registros si se otorga la poliza y se inserta en la tabla para ir contando
-					// wleyenda =.t.
-					//se=sqle(co,"insert into preddexpcont (exp) values (?thisform.txtexped.value)")
-					//if se < 1
-					//messagebox("error al insertar expediente en PREDDEXPCONT",0,"Recibo Predial")
-					//endif
-					// endif
-					//endif
-		
-		
-					//ACTUALIZA PREDMYEAR
-					//es valido  este codigo a laravel 5.4 y php 5.6
-					$byear = trim(date("Y"));
-		
-					$rowf = DB::connection('sqlsrv')->select("SELECT * FROM predmyear WHERE year=?", [$byear]);
-					foreach ($rowf as $row) {
-						$wsuminporte = trim('importe_' . trim(date("n")));
-						$waddimporte = $row->{$wsuminporte} + $WTOTALMIMPORTE;
-						$waddimportefin = $row->importe_13 + $WTOTALMIMPORTE;
-		
-						$wsumrecgasa = trim('recgasa_' . trim(date("n")));
-						$waddrecgasa = $row->{$wsumrecgasa} + $WTOTALwrecargos;
-						$waddrecgasafin = $row->recgasa_13 + $WTOTALwrecargos;
-		
-						$wsumboniacu = trim('boniacu_' . trim(date("n")));
-						$waddboniacu = $row->{$wsumboniacu} + $WTOTALwrecargos;
-						$waddboniacufin = $row->boniacu_13 + $WTOTALpbonimp + $WTOTALbonrec;
-		
-						$sqlfupdatepredmyear = "UPDATE predmyear SET $wsuminporte=$waddimporte, importe_13=$waddimportefin, $wsumrecgasa=$waddrecgasa, recgasa_13=$waddrecgasafin, $wsumboniacu=$waddboniacu, boniacu_13=$waddboniacufin WHERE year=?";
-						DB::connection('sqlsrv')->update($sqlfupdatepredmyear, [$byear]);
-					}
+
+					$paramsIns = [
+						$hoy,
+						$wfoliorec,
+						$wcaja,
+						$wsnombre,
+						$wsdireccion,
+						$wsciudad,
+						$wdescconcepto,
+						'',
+						'',
+						$wctaimporte,
+						$wpredial,
+						$wpredialbonimp,
+						$wctarecargo,
+						$wtotrec,
+						$wtotbonrec,
+						$wctasancion,
+						$wsancion,
+						$wsancionbonimp,
+						$wctagastos,
+						$wgasto,
+						$wgastobonimp,
+						$wctaotros,
+						$wresago,
+						$wresagobonimp,
+						$wfun,
+						'00',
+						'PR',
+						$wcentro,
+						$Expe,
+						$wdescpp,
+						$wconcepto,
+						$numtc,
+						$noperacion,
+						$wimporte
+					];
+
+					DB::connection('sqlsrv')->insert($sqlIns, $paramsIns);
 				}
-		
+
+
+				//ACTUALIZA INGRESMCENTROS
+				//es valido  este codigo a laravel 5.4 y php 5.6	
+				$rowf = DB::connection('sqlsrv')->select("SELECT * FROM ingresmcentros WHERE centro=?", [$wcentro]);
+				foreach ($rowf as $row) {
+					$wsumingreso = trim('ingreso_' . trim(date("n")));
+					$wprecargos = $row->{$wsumingreso} + $WGRANTOTAL;
+					$wprecargos13 = $row->ingreso_13 + $WGRANTOTAL;
+					$sqlfupdatemcentros = "UPDATE ingresmcentros SET $wsumingreso=$wprecargos, ingreso_13=$wprecargos13 WHERE centro=?";
+
+					DB::connection('sqlsrv')->update($sqlfupdatemcentros, [$wcentro]);
+				}
+
+
+
+				//INSERTAR EN PREDDEXPCONT LOS EXPEDIENTES CON DERECHO A SEGURO
+
+				//1-se trae los tipos de construccion marcados como habitacionales campo (HABITA)
+				//$sqlf= mssql_query("select * from predmtpoconst where habita = 1");
+				//while($rowf =  mssql_fetch_array($sqlf))
+
+				//2-revisa tipos de construccion que tiene el expediente
+				//$sqlf= mssql_query("select * from preddtpoconst where exp=\"$Expe\");
+				//while($rowf =  mssql_fetch_array($sqlf))
+
+				//3-verifica cuantos exp tiene la tabla preddexpcont para que no pase de 20,000 que sea saldo=0 y que area de construccion sea mayor a 20 mts.
+
+				//$sqlf= mssql_query("select count(*) as tot from preddexpcont");
+				//while($rowf =  mssql_fetch_array($sqlf))
+
+				// si el expediente tiene tipo de construccion 
+
+				//if wsalimp = 0 and sqcuantos.tot < 20000 and sqdexped.areaconst >= 20
+				//select * from dtpoconsexp where tpoconst not in (select tpoconst from mtpoconst) into cursor nohay
+				//si esta dtpoconsexp pero no esta en mtpcost
+				//select nohay
+				//*** si el cursor NOHAY tiene registros es que no se debe otorgar la poliza
+				//if reccount() > 0 
+				//wleyenda =.f.
+				//else
+				//*** si el cursor no tiene registros si se otorga la poliza y se inserta en la tabla para ir contando
+				// wleyenda =.t.
+				//se=sqle(co,"insert into preddexpcont (exp) values (?thisform.txtexped.value)")
+				//if se < 1
+				//messagebox("error al insertar expediente en PREDDEXPCONT",0,"Recibo Predial")
+				//endif
+				// endif
+				//endif
+				//*
+
+				//ACTUALIZA PREDMYEAR
+				//es valido  este codigo a laravel 5.4 y php 5.6
+				$byear = trim(date("Y"));
+
+				$rowf = DB::connection('sqlsrv')->select("SELECT * FROM predmyear WHERE year=?", [$byear]);
+				foreach ($rowf as $row) {
+					$wsuminporte = trim('importe_' . trim(date("n")));
+					$waddimporte = $row->{$wsuminporte} + $WTOTALMIMPORTE;
+					$waddimportefin = $row->importe_13 + $WTOTALMIMPORTE;
+
+					$wsumrecgasa = trim('recgasa_' . trim(date("n")));
+					$waddrecgasa = $row->{$wsumrecgasa} + $WTOTALwrecargos;
+					$waddrecgasafin = $row->recgasa_13 + $WTOTALwrecargos;
+
+					$wsumboniacu = trim('boniacu_' . trim(date("n")));
+					$waddboniacu = $row->{$wsumboniacu} + $WTOTALwrecargos;
+					$waddboniacufin = $row->boniacu_13 + $WTOTALpbonimp + $WTOTALbonrec;
+
+					$sqlfupdatepredmyear = "UPDATE predmyear SET $wsuminporte=$waddimporte, importe_13=$waddimportefin, $wsumrecgasa=$waddrecgasa, recgasa_13=$waddrecgasafin, $wsumboniacu=$waddboniacu, boniacu_13=$waddboniacufin WHERE year=?";
+					DB::connection('sqlsrv')->update($sqlfupdatepredmyear, [$byear]);
+				}
+
+
 				//sorteo predial (con eso ejecuta el store.)
 				//$sqlSorteo = mssql_query("exec dbo.sorteoPredial @exp = \"$Expe\" ",$con);
-		
-		
+
+
 				// <!-- FIN INSERT DEL PAGO-->
-			    break;   
-		        
-				case "SINEXP" :
+				break;
+
+			case "SINEXP":
 				echo "<script>";
 				echo 'url="edopredial.php";';
 				echo 'document.location = url;';
 				echo "</script>";
 				$wfoliorec = " ";   //garm20220831 
-		
+
 				$wcaja  = " ";
-		
+
 				$wdescconcepto = " ";
-		
+
 				break;
-			
+		}
 
-	
 
-					
-		}                  
-			
-         //!aqui termina
+		//!aqui termina
+	}
 }
-             
-?>
-

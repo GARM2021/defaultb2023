@@ -145,7 +145,7 @@ class DefaultbController extends Controller
 				// $spresource = mssql_query($sqlpru, $con);
 
 				$spName = "SP_NewRecOf";
-				$result = DB::select("CALL " . $spName);
+				$result =DB::connection('sqlsrv')->select("CALL " . $spName); //! 
 
 				$spfoliorec = "0";
 
@@ -178,7 +178,7 @@ class DefaultbController extends Controller
 				//$sql= mssql_query("SELECT * FROM ingresmconceptos where con=\"$wconcepto\" ",$con);
 				//es valido  este codigo a laravel 5.4 y php 5.6
 
-				$sql = DB::select("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro FROM ingresmconceptos where con = ?", [$wconcepto]);
+				$sql =DB::connection('sqlsrv')->select("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro FROM ingresmconceptos where con = ?", [$wconcepto]);
 
 				if (!empty($sql)) {
 					$rowf = $sql[0];
@@ -220,7 +220,7 @@ class DefaultbController extends Controller
 				$query = "SELECT a.tpocar, a.yearbim, a.montoimp, a.salimp, a.salsub, a.bimsem, a.pctimpbon, a.impbon, a.fechaven, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp = ? and";
 				$query .= " b.tpocar COLLATE DATABASE_DEFAULT = a.tpocar COLLATE DATABASE_DEFAULT  and a.estatus < '0001' ORDER BY yearbim";
 
-				$sql = DB::select($query, [$Expe]);
+				$sql = DB::connection('sqlsrv')->select($query, [$Expe]);
 				$row_cnt = count($sql);
 
 				$descuentoAdicionalFlag = true;
@@ -228,7 +228,7 @@ class DefaultbController extends Controller
 				$query222 = "SELECT a.exp, b.descripcion FROM preddadeudos a, predmtpocar b where a.exp = ? and";
 				$query222 .= " b.tpocar COLLATE DATABASE_DEFAULT = a.tpocar COLLATE DATABASE_DEFAULT  and a.estatus < '0001' AND impbon > 0 ORDER BY yearbim";
 
-				$sql222 = DB::select($query222, [$Expe]);
+				$sql222 = DB::connection('sqlsrv')->select($query222, [$Expe]);
 				$row_cnt222 = count($sql222);
 
 				if ($row_cnt222 > 0) {
@@ -280,7 +280,7 @@ class DefaultbController extends Controller
 					//$sql2= mssql_query("SELECT * FROM bondbonpred where tpocar=\"$tpocar\" and fecini<=\"$hoy\" and fecfin>=\"$hoy\" and estatus='0' ",$con);
 					//es valido  este codigo a laravel 5.4 y php 5.6
 
-					$sql2 = DB::select("SELECT pctbonimp, funautbon FROM bondbonpred where tpocar = ? and fecini <= ? and fecfin >= ? and estatus = '0'", [$tpocar, $hoy, $hoy]);
+					$sql2 = DB::connection('sqlsrv')->select("SELECT pctbonimp, funautbon FROM bondbonpred where tpocar = ? and fecini <= ? and fecfin >= ? and estatus = '0'", [$tpocar, $hoy, $hoy]);
 					$row_cnt2 = count($sql2);
 
 					foreach ($sql2 as $row2) {
@@ -342,7 +342,7 @@ class DefaultbController extends Controller
 					//es valido  este codigo a laravel 5.4 y php 5.6
 					$sql3 = "SELECT pctbonrec FROM bondbonpred where tpocar=? and fecini<=? and fecfin>=? and estatus='0'";
 					$params3 = [$tpocar, $hoy, $hoy];
-					$result3 = DB::select($sql3, $params3);
+					$result3 = DB::connection('sqlsrv')->select($sql3, $params3);
 					$row_cnt3 = count($result3);
 
 					foreach ($result3 as $row3) {
@@ -433,7 +433,7 @@ class DefaultbController extends Controller
 					//es valido  este codigo a laravel 5.4 y php 5.6
 					$sqlrevpag = "SELECT exp FROM preddpagos where exp=? and yearbim=? and fpago > '01' and estatus='0000' and tpocar=?";
 					$paramsrevpag = [$Expe, $wyearbim, $tpocar];
-					$resultrevpag = DB::select($sqlrevpag, $paramsrevpag);
+					$resultrevpag =DB::connection('sqlsrv')->select($sqlrevpag, $paramsrevpag);
 					$reccount_revpag = count($resultrevpag);
 					if ($reccount_revpag == 0) {
 						// <!-- INSERT DEL PAGO preddpagos-->   
@@ -469,7 +469,7 @@ class DefaultbController extends Controller
 
 						// GARM 20220209 080500075244 INSERT COMPACTADO 
 						//es valido  este codigo a laravel 5.4 y php 5.6
-						DB::table('preddpagos')->insert([
+						DB::connection('sqlsrv')->table('preddpagos')->insert([
 							'exp' => $Expe,
 							'ctafolio' => '00000000000000',
 							'cuenta' => '00000000',
@@ -497,7 +497,7 @@ class DefaultbController extends Controller
 							'yearindfin' => $noperacion,
 						]);
 
-						DB::table('preddadeudos')
+						DB::connection('sqlsrv')->table('preddadeudos')
 							->where('exp', $Expe)
 							->where('yearbim', $wyearbim)
 							->where('estatus', '0000')

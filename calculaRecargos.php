@@ -13,7 +13,7 @@ if (trim($bimsem) == '06') {
 $wofecven = $row->fechaven;
 //es valido  este codigo a laravel 5.4 y php 5.6
 
-$sql_Requerido = DB::select("SELECT top 1 * FROM preddrequer where exp = ? ORDER BY freq DESC", [$Expe]);
+$sql_Requerido = DB::connection('sqlsrv')->select("SELECT top 1 * FROM preddrequer where exp = ? ORDER BY freq DESC", [$Expe]);
 $row_cnt_Requerido = count($sql_Requerido);
 
 foreach ($sql_Requerido as $row_reque) {
@@ -25,12 +25,12 @@ if ($row_cnt_Requerido == 0) {
 	//echo 'CALCULA RECARGOS CON LA TABLA 1 DE RECARGOS '.$wRfecreq.'  '.$wofecven;
 	//es valido  este codigo a laravel 5.4 y php 5.6
 	// cuando no se encuentra el bsyb en la tabla
-	$sql_recargos = DB::select("SELECT * FROM predmtabrec where bsyb = ?", [$wbsyb]);
+	$sql_recargos =DB::connection('sqlsrv')->select("SELECT * FROM predmtabrec where bsyb = ?", [$wbsyb]);
     $row_cnt_recargos = count($sql_recargos);
 
 if ($row_cnt_recargos == 0) {
     // cuando no se encuentra el bsyb en la tabla
-    $sql_recargos = DB::select("SELECT top 1 * FROM predmtabrec order BY bsyb");
+    $sql_recargos = DB::connection('sqlsrv')->select("SELECT top 1 * FROM predmtabrec order BY bsyb");
     $row_cnt_recargos = count($sql_recargos);
 
     foreach ($sql_recargos as $row_recargos) {
@@ -84,12 +84,12 @@ if ($row_cnt_recargos == 0) {
 		if ($wRfecreq >= $wofecven) 
 		{
 			//echo 'CALCULA RECARGOS CON LA TABLA 2 DE RECARGOS '.$wRfecreq.' >= '.$wofecven;
-			$sql_recargos = DB::select("SELECT * FROM predmtabrec2 where bsyb= = ?", [$wbsyb]);
+			$sql_recargos = DB::connection('sqlsrv')->select("SELECT * FROM predmtabrec2 where bsyb= = ?", [$wbsyb]);
 			$row_cnt_recargos = count($sql_recargos);
 		
 			if ($row_cnt_recargos == 0) {
 				// cuando no se encuentra el bsyb en la tabla
-				$sql_recargos = DB::select("SELECT top 1 * FROM predmtabrec2 order BY bsyb");
+				$sql_recargos =DB::connection('sqlsrv')->select("SELECT top 1 * FROM predmtabrec2 order BY bsyb");
 				$row_cnt_recargos = count($sql_recargos);
 		
 				foreach ($sql_recargos as $row_recargos) {
@@ -141,11 +141,11 @@ if ($row_cnt_recargos == 0) {
 
 		//echo 'CALCULA RECARGOS CON LA TABLA 1 DE RECARGOS '.$wRfecreq.' <= '.$wofecven;   
 		//convierte el codigo a laravel 5.4 y php 5.6       	  	
-			$sql_recargos = DB::select("SELECT * FROM predmtabrec WHERE bsyb=?", [$wbsyb]);
+			$sql_recargos = DB::connection('sqlsrv')->select("SELECT * FROM predmtabrec WHERE bsyb=?", [$wbsyb]);
 			$row_cnt_recargos = count($sql_recargos);
 			if ($row_cnt_recargos == 0) {
 				// cuando no se encuentra el bsyb en la tabla
-				$sql_recargos = DB::select("SELECT * FROM predmtabrec ORDER BY bsyb LIMIT 1");
+				$sql_recargos = DB::connection('sqlsrv')->select("SELECT * FROM predmtabrec ORDER BY bsyb LIMIT 1");
 				$row_cnt_recargos = count($sql_recargos);
 				foreach ($sql_recargos as $row_recargos) {
 					$wpctrec = trim('pctrec_' . trim(date("n")));
@@ -195,7 +195,7 @@ if ($row_cnt_recargos == 0) {
     $wntabla = trim($bimsem);
     //echo 'NO SE ENCONTRO EL BSYB  '.$wbsyb.$wpctrec.'<br>';
     //echo "SELECT TOP 1 ".$wpctrec." FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='".$wntabla."') ORDER BY bsyb";
-    $sql_recargos2 = DB::select("SELECT TOP 1 " . $wpctrec . " FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='" . $wntabla . "') ORDER BY bsyb");
+    $sql_recargos2 = DB::connection('sqlsrv')->select("SELECT TOP 1 " . $wpctrec . " FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='" . $wntabla . "') ORDER BY bsyb");
     $row_cnt_recargos2 = count($sql_recargos2);
     foreach ($sql_recargos2 as $row_recargos2) {
         $wprecargos = $row_recargos2->$wpctrec;

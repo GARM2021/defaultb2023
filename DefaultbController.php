@@ -60,36 +60,29 @@ class DefaultbController extends Controller
 		require('validapost.php'); //garm20220827
 
 
-		// //es valido  este codigo a laravel 5.4 y php 5.6
-		// $sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[referencia],[val_1_nivelDetalle],[t_servicio],[t_importe]";
-		// $sqlIns.= ",[val_3_moneda],[t_pago],[n_autoriz],[val_9_numtc],[val_10_fpagp],[val_5_financiamiento]";
-		// $sqlIns.= ",[val_6_periodoFinan],[val_11_email],[val_12_Telefono],[val_13_Sha1],[fecha] ) ";
-		// $sqlIns .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate()))";
 
-		// DB::connection('nombre_de_conexion')->statement($sql, $bindings);
-		// DB::connection('sqlsrv')->statement($sql, $bindings);
+		//! Insert correcto 20230601
+		// $sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[referencia],[val_1_nivelDetalle],[t_servicio],[t_importe],[val_3_moneda],[t_pago],[n_autoriz],[val_9_numtc],[val_10_fpagp],[val_5_financiamiento],[val_6_periodoFinan],[val_11_email],[val_12_Telefono],[val_13_Sha1],[fecha] ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate() )";
 
-		$sqlIns = "Insert into predmwebTransaction ([Expe],[s_transm],[referencia],[val_1_nivelDetalle],[t_servicio],[t_importe],[val_3_moneda],[t_pago],[n_autoriz],[val_9_numtc],[val_10_fpagp],[val_5_financiamiento],[val_6_periodoFinan],[val_11_email],[val_12_Telefono],[val_13_Sha1],[fecha] ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  getdate() )";
+		// DB::connection('sqlsrv')->statement($sqlIns, [   
+		// 	$Expe,                     
+		// 	$wsecuencia,
+		// 	$wreferencua,
+		// 	$wval_1,
+		// 	$wservicio,
+		// 	$wimporte,
+		// 	$val_3,
+		// 	$t_pago,
+		// 	$noperacion,
+		// 	$val_9,
+		// 	$val_10,
+		// 	$val_5,
+		// 	$val_6,
+		// 	$val_11,
+		// 	$val_12,
+		// 	$val_13
 
-		DB::connection('sqlsrv')->statement($sqlIns, [   
-			$Expe,                     
-			$wsecuencia,
-			$wreferencua,
-			$wval_1,
-			$wservicio,
-			$wimporte,
-			$val_3,
-			$t_pago,
-			$noperacion,
-			$val_9,
-			$val_10,
-			$val_5,
-			$val_6,
-			$val_11,
-			$val_12,
-			$val_13
-
-		]);
+		// ]);
 
 		//garm20220726 
 
@@ -143,14 +136,15 @@ class DefaultbController extends Controller
 				//es valido  este codigo a laravel 5.4 y php 5.6
 				// $sqlpru = "EXEC SP_NewRecOf ";
 				// $spresource = mssql_query($sqlpru, $con);
-
-				$spName = "SP_NewRecOf";
-				$result =DB::connection('sqlsrv')->select("CALL " . $spName); //! 
-
+				//DB::statement('EXEC nombre_del_procedimiento ?, ?', [$parametro1, $parametro2]);
+				//$spName = "SP_NewRecOf";
+				//$result =DB::connection('sqlsrv')->select("CALL " . $spName); //! 
+				//$result  = DB::connection('sqlsrv')->statement('EXEC SP_NewRecOf');
+				$results = DB::connection('sqlsrv')->select('EXEC SP_NewRecOf');
 				$spfoliorec = "0";
 
-				if (!empty($result)) {
-					$rowf = $result[0];
+				if (!empty($results) && is_object($results[0])) {
+					$rowf = $results[0];
 					$spfoliorec = $rowf->sfoliorec;
 				}
 
@@ -178,7 +172,7 @@ class DefaultbController extends Controller
 				//$sql= mssql_query("SELECT * FROM ingresmconceptos where con=\"$wconcepto\" ",$con);
 				//es valido  este codigo a laravel 5.4 y php 5.6
 
-				$sql =DB::connection('sqlsrv')->select("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro FROM ingresmconceptos where con = ?", [$wconcepto]);
+				$sql = DB::connection('sqlsrv')->select("SELECT ctaimporte, ctarecargo, ctasancion, ctagastos, ctaotros, centro FROM ingresmconceptos where con = ?", [$wconcepto]);
 
 				if (!empty($sql)) {
 					$rowf = $sql[0];
@@ -196,7 +190,7 @@ class DefaultbController extends Controller
 				//$sql= mssql_query("SELECT * FROM preddexped where exp=\"$Expe\" and fbaja < '00000001' order by exp",$con);
 				//es valido  este codigo a laravel 5.4 y php 5.6
 
-				$sql = DB::select("SELECT apat, amat, nombre, domubi, colubi FROM preddexped where exp = ? and fbaja < '00000001' order by exp", [$Expe]);
+				$sql = DB::connection('sqlsrv')->select("SELECT apat, amat, nombre, domubi, colubi FROM preddexped where exp = ? and fbaja < '00000001' order by exp", [$Expe]);
 				$row_cnt = count($sql);
 
 				if ($row_cnt == 0) {
@@ -287,7 +281,7 @@ class DefaultbController extends Controller
 						$paso1 = (($row->salimp - $row->salsub) * $row2->pctbonimp) / 100;
 
 						if ($tpocar == '0002') {
-							$paso1 = ($row['salimp'] * ($row2->pctbonimp + 5)) / 100;
+							$paso1 = ($row->salimp * ($row2->pctbonimp + 5)) / 100;
 						}
 
 						$paso2 = $paso1 * 10;
@@ -433,7 +427,7 @@ class DefaultbController extends Controller
 					//es valido  este codigo a laravel 5.4 y php 5.6
 					$sqlrevpag = "SELECT exp FROM preddpagos where exp=? and yearbim=? and fpago > '01' and estatus='0000' and tpocar=?";
 					$paramsrevpag = [$Expe, $wyearbim, $tpocar];
-					$resultrevpag =DB::connection('sqlsrv')->select($sqlrevpag, $paramsrevpag);
+					$resultrevpag = DB::connection('sqlsrv')->select($sqlrevpag, $paramsrevpag);
 					$reccount_revpag = count($resultrevpag);
 					if ($reccount_revpag == 0) {
 						// <!-- INSERT DEL PAGO preddpagos-->   
@@ -525,84 +519,50 @@ class DefaultbController extends Controller
 					$reccount_revpagINGRES = 1;
 				}
 
-				if ($reccount_revpagINGRES == 0) {
-					$sqlIns = "INSERT INTO ingresdingresos (
-							fecha,
-							recibo,
-							caja,
-							nombre,
-							direccion,
-							ciudad,
-							concepto_1,
-							concepto_2,
-							concepto_3,
-							concepto_4,
-							ctaimporte,
-							importe,
-							bonimporte,
-							ctarecargo,
-							recargos,
-							bonrecargo,
-							ctasancion,
-							sanciones,
-							bonsancion,
-							ctagastos,
-							gastos,
-							bongastos,
-							ctaotros,
-							otros,
-							bonotros,
-							fun,
-							estatusmov,
-							tipo,
-							centro,
-							referencia,
-							descpp,
-							con,
-							numtc,
-							refban,
-							imptc
-						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-					$paramsIns = [
-						$hoy,
-						$wfoliorec,
-						$wcaja,
-						$wsnombre,
-						$wsdireccion,
-						$wsciudad,
-						$wdescconcepto,
-						'',
-						'',
-						$wctaimporte,
-						$wpredial,
-						$wpredialbonimp,
-						$wctarecargo,
-						$wtotrec,
-						$wtotbonrec,
-						$wctasancion,
-						$wsancion,
-						$wsancionbonimp,
-						$wctagastos,
-						$wgasto,
-						$wgastobonimp,
-						$wctaotros,
-						$wresago,
-						$wresagobonimp,
-						$wfun,
-						'00',
-						'PR',
-						$wcentro,
-						$Expe,
-						$wdescpp,
-						$wconcepto,
-						$numtc,
-						$noperacion,
-						$wimporte
-					];
 
-					DB::connection('sqlsrv')->insert($sqlIns, $paramsIns);
-				}
+			
+
+				// if ($reccount_revpagINGRES == 0) { //! debe ir 
+				DB::connection('sqlsrv')->table('ingresdingresos')->insert([
+					'fecha' => $hoy,
+					'recibo' => $wfoliorec,
+					'caja' => $wcaja,
+					'nombre' => $wsnombre,
+					'direccion' => $wsdireccion,
+					'ciudad' => $wsciudad,
+					'concepto_1' => $wdescconcepto,
+					'concepto_2' => '',
+					'concepto_3' => '',
+					'concepto_4' => '',
+					'ctaimporte' => $wctaimporte,
+					'importe' => $wpredial,
+					'bonimporte' => $wpredialbonimp,
+					'ctarecargo' => $wctarecargo,
+					'recargos' => $wtotrec,
+					'bonrecargo' => $wtotbonrec,
+					'ctasancion' => $wctasancion,
+					'sanciones' => $wsancion,
+					'bonsancion' => $wsancionbonimp,
+					'ctagastos' => $wctagastos,
+					'gastos' => $wgasto,
+					'bongastos' => $wgastobonimp,
+					'ctaotros' => $wctaotros,
+					'otros' => $wresago,
+					'bonotros' => $wresagobonimp,
+					'fun' => $wfun,
+					'estatusmov' => '00',
+					'tipo' => 'PR',
+					'centro' => $wcentro,
+					'referencia' => $Expe,
+					'descpp' => $wdescpp,
+					'con' => $wconcepto,
+					'numtc' => $numtc,
+					'refban' => $noperacion,
+					'imptc' => $wimporte,
+				]);
+
+				//	}//! debe ir 
 
 
 				//ACTUALIZA INGRESMCENTROS

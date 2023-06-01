@@ -42,7 +42,7 @@ if ($row_cnt_recargos == 0) {
                 $wpctrec = trim('pctrec_1');
         }
 
-        $paso1 = ($row->salimp * $row_recargos->$wpctrec) / 100;
+        $paso1 = ($row->salimp * $row_recargos->{$wpctrec}) / 100;
         $paso2 = $paso1 * 10;
         $paso3 = (int)($paso2);
         $wrecargos = $paso3 / 10;
@@ -65,7 +65,7 @@ if ($row_cnt_recargos == 0) {
 				}
 			}
 		
-			$paso1 = ($row->salimp * $row_recargos->wpctrec) / 100;
+			$paso1 = ($row->salimp * $row_recargos->{$wpctrec}) / 100;
 			$paso2 = $paso1 * 10;
 			$paso3 = (int)($paso2);
 			$wrecargos = $paso3 / 10;
@@ -104,7 +104,7 @@ if ($row_cnt_recargos == 0) {
 						}
 					}
 		
-					$paso1 = ($row->salimp * $row_recargos[$wpctrec]) / 100;
+					$paso1 = ($row->salimp * $row_recargos->{$wpctrec}) / 100;
 					$paso2 = $paso1 * 10;
 					$paso3 = (int)($paso2);
 					$wrecargos = $paso3 / 10;
@@ -130,7 +130,7 @@ if ($row_cnt_recargos == 0) {
 					}
 				}
 			
-				$paso1 = ($row->salimp * $row_recargos[$wpctrec]) / 100;
+				$paso1 = ($row->salimp * $row_recargos->{$wpctrec}) / 100;
 				$paso2 = $paso1 * 10;
 				$paso3 = (int)($paso2);
 				$wrecargos = $paso3 / 10;
@@ -156,7 +156,7 @@ if ($row_cnt_recargos == 0) {
 							$wpctrec = trim('pctrec_' . trim('1'));
 					}
 					//$wprecargos=$row_recargos[$wpctrec];  
-					$paso1 = ($row['salimp'] * $row_recargos->$wpctrec) / 100;
+					$paso1 = ($row['salimp'] * $row_recargos->{$wpctrec}) / 100;
 					$paso2 = $paso1 * 10;
 					$paso3 = (int)($paso2);
 					$wrecargos = $paso3 / 10;
@@ -166,7 +166,7 @@ if ($row_cnt_recargos == 0) {
 				}
 			}
 
-		}
+		
 		 else
 		 {
 				//convierte el codigo a laravel 5.4 y php 5.6    
@@ -179,7 +179,7 @@ if ($row_cnt_recargos == 0) {
 						$wpctrec = trim('pctrec_' . trim('1'));
 				}
 				//$wprecargos=$row_recargos[$wpctrec];  
-				$paso1 = ($row->slimp * $row_recargos[$wpctrec]) / 100;
+				$paso1 = ($row->slimp * $row_recargos->{$wpctrec}) / 100;
 				$paso2 = $paso1 * 10;
 				$paso3 = (int)($paso2);
 				$wrecargos = $paso3 / 10;
@@ -198,7 +198,7 @@ if ($row_cnt_recargos == 0) {
     $sql_recargos2 = DB::connection('sqlsrv')->select("SELECT TOP 1 " . $wpctrec . " FROM predmtabrec WHERE (SUBSTRING(bsyb, 1, 2) ='" . $wntabla . "') ORDER BY bsyb");
     $row_cnt_recargos2 = count($sql_recargos2);
     foreach ($sql_recargos2 as $row_recargos2) {
-        $wprecargos = $row_recargos2->$wpctrec;
+        $wprecargos = $row_recargos2->{$wpctrec};
         if ($WDIAMES == 1) {
             $WMESMENOS = trim(date("n")) - 1;
             $wpctrec = trim('pctrec_' . trim($WMESMENOS));
@@ -209,9 +209,9 @@ if ($row_cnt_recargos == 0) {
         $paso2 = $paso1 * 10;
         $paso3 = (int) ($paso2);
         $wrecargos = $paso3 / 10;
-        ////$wrecargos=round((($row['salimp']-$row['salsub'])*$wprecargos)/100,0);
+       //$wrecargos=round((($row['salimp']-$row['salsub'])*$wprecargos)/100,0);
         //echo '7 <br>';
     }
 }
-
+ }
 ?>

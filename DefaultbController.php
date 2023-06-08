@@ -642,6 +642,20 @@ class DefaultbController extends Controller
 
 
 				// <!-- FIN INSERT DEL PAGO-->
+					$datos = [];
+								
+
+						$datos["hoy"] = $hoy;
+						$datos["wfoliorec"] = $wfoliorec;
+						$datos["wcaja"] = $wcaja;
+						$datos["wdescconcepto"] = $wdescconcepto;
+						$datos["Expe"] = $Expe;
+						$datos["noperacion"] = $noperacion;
+						$datos["wimporte"] = $wimporte;
+					
+
+					
+					return view('predial_compago', ["resultados" => $datos]);
 				break;
 
 			case "SINEXP":

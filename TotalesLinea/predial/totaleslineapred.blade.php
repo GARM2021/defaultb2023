@@ -17,9 +17,11 @@
 		<div class="whitepaper">
 			<div class="Header">
 				<div class="Logo_empresa">
-					<img src="https://www.guadalupe.gob.mx/wp-content/uploads/2021/09/Escudo-2021-2024_350x182.png" alt="Logo">
+					{{-- <img src="http://www.guadalupe.gob.mx/wp-content/uploads/2021/09/Escudo-2021-2024_350x182.png" alt="Logo"> --}}
+					<img src="http://webguadalupe.s3.amazonaws.com/wp-content/uploads/2023/06/Escudo-2021-2024_350x182.png" alt="Logo">
+
 					
-				</div>
+				</div>	
 			</div>
 				<div class="Table-Data">
 					<div>Cobrado el d&iacute;a de hoy {{($resultados['hoy'])}}</div>	
